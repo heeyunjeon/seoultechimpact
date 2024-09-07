@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './map.module.css';
+import { useRouter } from 'next/navigation';
+import { TiHome, TiThLarge } from "react-icons/ti";
 
 const dataConfig = {
   toilet: {
@@ -25,6 +27,8 @@ const dataConfig = {
 };
 
 function MapComponent() {
+  const router = useRouter();
+
   const searchParams = useSearchParams();
   const object = searchParams.get('object');
   const [location, setLocation] = useState(null);
@@ -250,10 +254,33 @@ function MapComponent() {
     }
   };
 
+  const handleButtonClick = (object) => {
+    if (object === 'home') {
+      router.push('/')
+    } else {
+      router.push(`/map/detail`);
+    }
+
+  };
+
+  const title = () => {
+    if (object === 'trash') {
+      return 'Bin'
+    } else if (object === 'ciggy') {
+      return 'Smoking Place'
+    } else if (object === 'toilet') {
+      return 'Toilet'
+    }
+  }
+
+  title()
+
+
   return (
     <div className={styles.container}>
-      <h1>Map Page</h1>
-      <p>Showing closest {object}</p>
+      <TiHome onClick={() => handleButtonClick('home')} size={30} />
+      <h2>{title()} Near Me</h2>
+      <p>Showing closest {title()} </p>
       {location && (
         <p>
           Your location: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
@@ -267,6 +294,10 @@ function MapComponent() {
           ))}
         </ul>
       )} */}
+      <div className={styles.buttonWrapper}>
+        <button className={styles.firstButton} onClick={() => handleButtonClick({ object })}>Nearest</button>
+        <button>Find the way</button></div>
+
     </div>
   );
 }
