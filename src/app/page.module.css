@@ -166,7 +166,7 @@ a.secondary {
 
 .pressStart2pRegular {
   text-align: center;
-  margin-top: 100px;
+  margin-top: 50px;
   font-family: "Press Start 2P", system-ui;
   font-weight: 400;
   font-style: normal;
@@ -207,6 +207,7 @@ a.secondary {
 .text {
   font-size: 25px;
   text-align: center;
+  margin-top: 30px;
 }
 
 @keyframes blink {

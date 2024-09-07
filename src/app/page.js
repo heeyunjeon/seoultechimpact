@@ -16,11 +16,11 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
+      <div className={styles.text}>Touch an icon <br />to find your way to </div>
       <header className={styles.pressStart2pRegular}>
         <span className={styles.blinkingText}>BIN</span>GO
       </header>
       <div className={styles.bingoWrapper}>
-        <div className={styles.text}>Touch an icon <br />to find your way to go.</div>
         <div className={styles.gridContainer}>
           <div className={styles.gridItem}>        <PiCigaretteFill color="black" size={50} onClick={() => handleButtonClick('ciggy')} /></div>
           <div className={styles.gridItem}>Ciggy</div>
