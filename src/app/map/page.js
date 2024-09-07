@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './map.module.css';
@@ -11,25 +10,34 @@ const dataConfig = {
   toilet: {
     latKey: 'WGS84위도',
     lngKey: 'WGS84경도',
-    markerImage: '/icons/toilet.png',
+    markerImage: '/public/data/toilet.png',
   },
+  // Additional configuration objects can be added here for 'trash' and 'ciggy'
 };
 
 function Map() {
-  const searchParams = useSearchParams();
-  const object = searchParams.get('object');
+  const [object, setObject] = useState(null);
   const [location, setLocation] = useState(null);
   const [items, setItems] = useState([]);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const searchParams = useSearchParams();
+
+  // Use useEffect to retrieve and set the search params
+  useEffect(() => {
+    const obj = searchParams.get('object');
+    setObject(obj);
+  }, [searchParams]);
 
   useEffect(() => {
+    if (!object) return;
+
     mapboxgl.accessToken =
       'pk.eyJ1IjoibmFlbmFoamVvbiIsImEiOiJjbTBzNmx0dnYwYmd3MmtwdDlpcHllcjFtIn0.U1p29oCiff8HM9Dx96NrkQ';
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [126.978, 37.5665],
+      center: [126.978, 37.5665], // Default to Seoul
       zoom: 10,
     });
 
@@ -67,12 +75,10 @@ function Map() {
       );
     }
 
-    if (object) {
-      fetchData(object);
-    }
+    fetchData(object);
 
     return () => mapRef.current.remove();
-  });
+  }, [object]);
 
   const fetchData = async (objectType) => {
     try {
@@ -96,19 +102,10 @@ function Map() {
       const data = await response.json();
       const items = data.Sheet0 || [];
       console.log('Extracted items:', items);
-      console.log('Number of items:', items.length);
-
-      const filteredItems = items.filter(
-        (item) =>
-          item['소재지도로명주소']?.includes('서초구') &&
-          item['소재지지번주소']?.includes('서초구')
-      );
-      console.log('Filtered:', filteredItems);
-
-      setItems(filteredItems);
+      setItems(items);
 
       if (mapRef.current) {
-        addMarkersToMap(filteredItems, objectType);
+        addMarkersToMap(items, objectType);
       }
     } catch (error) {
       console.error(`Error fetching ${objectType} data:`, error);
@@ -123,15 +120,7 @@ function Map() {
     }
 
     try {
-      if (!mapRef.current.hasImage(`${dataType}-marker`)) {
-        await new Promise((resolve, reject) => {
-          mapRef.current.loadImage(config.markerImage, (error, image) => {
-            if (error) reject(error);
-            mapRef.current.addImage(`${dataType}-marker`, image);
-            resolve();
-          });
-        });
-      }
+      await loadMarkerImage(mapRef.current, dataType);
     } catch (error) {
       console.error(`Error loading marker image for ${dataType}:`, error);
       return;
@@ -141,8 +130,6 @@ function Map() {
       .map((item) => {
         const lat = parseFloat(item[config.latKey]);
         const lng = parseFloat(item[config.lngKey]);
-
-        console.log(lat, lng);
 
         if (isNaN(lat) || isNaN(lng)) {
           console.warn('Invalid coordinates for item:', item);
@@ -183,7 +170,7 @@ function Map() {
       source: 'points',
       layout: {
         'icon-image': `${dataType}-marker`,
-        'icon-size': 0.1,
+        'icon-size': 0.5,
       },
     });
   };
@@ -191,7 +178,7 @@ function Map() {
   const getItemName = (item, dataType) => {
     switch (object) {
       case 'toilet':
-        return item.화장실명;
+        return item.PBCTLT_PLC_NM;
       default:
         return 'Unknown';
     }
@@ -207,13 +194,13 @@ function Map() {
         </p>
       )}
       <div id="map" className={styles.mapContainer} ref={mapContainerRef}></div>
-      {/* {items.length > 0 && (
+      {items.length > 0 && (
         <ul>
           {items.map((item, index) => (
             <li key={index}>{getItemName(item, object)}</li>
           ))}
         </ul>
-      )} */}
+      )}
     </div>
   );
 }
