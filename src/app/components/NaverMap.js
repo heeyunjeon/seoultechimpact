@@ -5,7 +5,8 @@ import React, { useEffect } from 'react';
 const NaverMap = () => {
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.X_NCP_APIGW_API_KEY_ID}`;
+    script.src =
+      'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=qqn2gu7wlv';
     script.async = true;
     document.head.appendChild(script);
 
