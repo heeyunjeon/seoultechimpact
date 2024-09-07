@@ -163,3 +163,62 @@ a.secondary {
     filter: invert();
   }
 }
+
+.pressStart2pRegular {
+  text-align: center;
+  margin-top: 100px;
+  font-family: "Press Start 2P", system-ui;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 50px;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 100px 100px 100px;
+  grid-template-rows: 100px 100px 100px;
+  padding: 10px;
+  /* gap: 50px; */
+}
+
+.gridItem {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  font-size: 30px;
+  text-align: center;
+  color: rgb(147, 146, 146);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bingoWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 70vh;
+  justify-content: center;
+  align-items: center;
+  /* background-color: red; */
+}
+
+.text {
+  font-size: 25px;
+  text-align: center;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    color: white;
+  }
+  50% {
+    color: greenyellow;
+  }
+}
+
+.blinkingText {
+  animation: blink 1s infinite; /* 1초마다 애니메이션 반복 */
+}
