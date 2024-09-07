@@ -12,6 +12,16 @@ const dataConfig = {
     lngKey: 'WGS84경도',
     markerImage: '/icons/toilet.png',
   },
+  trash: {
+    latKey: '위도',
+    lngKey: '경도',
+    markerImage: '/icons/trash.png',
+  },
+  ciggy: {
+    latKey: '위도',
+    lngKey: '경도',
+    markerImage: '/icons/ciggy.png',
+  },
 };
 
 function MapComponent() {
@@ -77,33 +87,77 @@ function MapComponent() {
 
   const fetchData = async (objectType) => {
     try {
-      let jsonFileName;
+      let response;
+
       switch (objectType) {
         case 'toilet':
-          jsonFileName = 'toilet.json';
+          response = await fetch(`/data/toilet.json`);
+          break;
+        case 'trash':
+          response = await fetch(`/data/trash.json`);
+          break;
+        case 'ciggy':
+          response = await fetch(
+            'https://api.odcloud.kr/api/15104099/v1/uddi:c90729c3-981d-49b3-85d4-ee022a9a2bfb',
+            {
+              headers: {
+                Authorization: 'Infuser data-portal-test-key',
+              },
+            }
+          );
           break;
         default:
           throw new Error('Unsupported object type');
       }
-      const jsonUrl = new URL(`/data/${jsonFileName}`, window.location.origin);
-      console.log('Fetching from URL:', jsonUrl.toString());
-
-      const response = await fetch(jsonUrl.toString());
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
 
       const data = await response.json();
-      const items = data.Sheet0 || [];
+      console.log('data:', data);
+      let items = [];
+
+      if (objectType === 'toilet') {
+        items = data.Sheet0 || [];
+      } else if (objectType === 'trash') {
+        items = data.records || [];
+      } else if (objectType === 'ciggy') {
+        items = [];
+        let i = 0;
+
+        while (i < 10 && i < data.data.length) {
+          // Ensure you do not exceed the length of data.data
+          items.push(data.data[i]);
+          // Add each item to the array
+          i += 1;
+        }
+      } else {
+        throw new Error('Unsupported object type for filtering');
+      }
+
       console.log('Extracted items:', items);
       console.log('Number of items:', items.length);
 
-      const filteredItems = items.filter(
-        (item) =>
-          item['소재지도로명주소']?.includes('서초구') &&
-          item['소재지지번주소']?.includes('서초구')
-      );
+      let filteredItems = [];
+
+      if (objectType === 'toilet' || objectType === 'trash') {
+        if (objectType === 'toilet') {
+          filteredItems = items.filter(
+            (item) =>
+              item['소재지도로명주소']?.includes('서초구') &&
+              item['소재지지번주소']?.includes('서초구')
+          );
+        } else {
+          filteredItems = items.filter((item) =>
+            item['시군구명']?.includes('서초구')
+          );
+        }
+      } else if (objectType === 'ciggy') {
+        // Adjust filtering logic if needed
+        filteredItems = items; // Example, replace with actual logic
+      }
+
       console.log('Filtered:', filteredItems);
 
       setItems(filteredItems);
@@ -142,8 +196,6 @@ function MapComponent() {
       .map((item) => {
         const lat = parseFloat(item[config.latKey]);
         const lng = parseFloat(item[config.lngKey]);
-
-        console.log(lat, lng);
 
         if (isNaN(lat) || isNaN(lng)) {
           console.warn('Invalid coordinates for item:', item);
@@ -190,7 +242,7 @@ function MapComponent() {
   };
 
   const getItemName = (item, dataType) => {
-    switch (object) {
+    switch (dataType) {
       case 'toilet':
         return item.화장실명;
       default:
