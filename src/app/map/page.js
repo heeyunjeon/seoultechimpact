@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './map.module.css';
@@ -15,7 +14,7 @@ const dataConfig = {
   },
 };
 
-function Map() {
+function MapComponent() {
   const searchParams = useSearchParams();
   const object = searchParams.get('object');
   const [location, setLocation] = useState(null);
@@ -24,6 +23,8 @@ function Map() {
   const mapRef = useRef(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Skip effect during SSR
+
     mapboxgl.accessToken =
       'pk.eyJ1IjoibmFlbmFoamVvbiIsImEiOiJjbTBzNmx0dnYwYmd3MmtwdDlpcHllcjFtIn0.U1p29oCiff8HM9Dx96NrkQ';
     mapRef.current = new mapboxgl.Map({
@@ -72,7 +73,7 @@ function Map() {
     }
 
     return () => mapRef.current.remove();
-  });
+  }, [object]);
 
   const fetchData = async (objectType) => {
     try {
@@ -218,4 +219,11 @@ function Map() {
   );
 }
 
-export default Map;
+// Wrap the map component in a Suspense boundary to handle client-side only hooks
+export default function MapPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MapComponent />
+    </Suspense>
+  );
+}
