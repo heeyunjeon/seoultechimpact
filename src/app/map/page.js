@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './map.module.css';
@@ -71,7 +72,7 @@ function Map() {
     }
 
     return () => mapRef.current.remove();
-  }, [object]);
+  });
 
   const fetchData = async (objectType) => {
     try {
