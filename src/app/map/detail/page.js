@@ -22,7 +22,7 @@ function Detail() {
             />
             <header className={styles.title}>Wonji-Dong - Bin 🗑</header>
             <div className={styles.imgWrapper}>
-                <img className={styles.image} src="https://upload.wikimedia.org/wikipedia/ko/thumb/8/83/Urbeach-washroom-changeroom-architecture.jpg/400px-Urbeach-washroom-changeroom-architecture.jpg" />
+                <img className={styles.image} src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAsIFtyb1nj1CXrL_6T0vJXMmP5FAjkmwXcQ&usqp=CAU" />
             </div>
             <div className={styles.informationCard}>
                 <p>📍 <strong>Location</strong><br /> &nbsp; - 594-10, Wonji-dong, Seocho-gu, Seoul</p><br />

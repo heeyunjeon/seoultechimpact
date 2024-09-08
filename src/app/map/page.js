@@ -7,8 +7,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './map.module.css';
 import { useRouter } from 'next/navigation';
 import { TiHome } from "react-icons/ti";
-import { FaTrashAlt, FaRestroom } from "react-icons/fa";
-import { PiCigaretteFill } from "react-icons/pi";
 
 const dataConfig = {
   toilet: {
@@ -58,6 +56,7 @@ function MapComponent() {
   const [items, setItems] = useState([]);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const [line, setLine] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return; // Skip effect during SSR
@@ -80,44 +79,6 @@ function MapComponent() {
           mapRef.current.addImage('custom-marker', image);
         }
       );
-
-      // Add the line from geojson and its gradient paint
-      mapRef.current.addSource('line', {
-        type: 'geojson',
-        lineMetrics: true,
-        data: geojson,
-      });
-
-      mapRef.current.addLayer({
-        type: 'line',
-        source: 'line',
-        id: 'line',
-        paint: {
-          'line-color': 'red',
-          'line-width': 14,
-          'line-gradient': [
-            'interpolate',
-            ['linear'],
-            ['line-progress'],
-            0,
-            'blue',
-            0.1,
-            'royalblue',
-            0.3,
-            'cyan',
-            0.5,
-            'lime',
-            0.7,
-            'yellow',
-            1,
-            'red',
-          ],
-        },
-        layout: {
-          'line-cap': 'round',
-          'line-join': 'round',
-        },
-      });
     });
 
     if (navigator.geolocation) {
@@ -151,16 +112,63 @@ function MapComponent() {
     return () => mapRef.current.remove();
   }, [object]);
 
+  useEffect(() => {
+    if (line && mapRef.current) {
+      // Make sure the map is loaded and add the line source if not already added
+      if (!mapRef.current.getSource('line')) {
+        mapRef.current.addSource('line', {
+          type: 'geojson',
+          lineMetrics: true,
+          data: geojson,
+        });
+      }
+
+      // Add the line layer if it doesn't exist
+      if (!mapRef.current.getLayer('line')) {
+        mapRef.current.addLayer({
+          type: 'line',
+          source: 'line',
+          id: 'line',
+          paint: {
+            'line-color': 'red',
+            'line-width': 14,
+            'line-gradient': [
+              'interpolate',
+              ['linear'],
+              ['line-progress'],
+              0,
+              'blue',
+              0.1,
+              'royalblue',
+              0.3,
+              'cyan',
+              0.5,
+              'lime',
+              0.7,
+              'yellow',
+              1,
+              'red',
+            ],
+          },
+          layout: {
+            'line-cap': 'round',
+            'line-join': 'round',
+          },
+        });
+      }
+    }
+  }, [line]);
+
   const fetchData = async (objectType) => {
     try {
       let response;
 
       switch (objectType) {
         case 'toilet':
-          response = await fetch(`/data/toilet.json`);
+          response = await fetch('/data/toilet.json');
           break;
         case 'trash':
-          response = await fetch(`/data/trash.json`);
+          response = await fetch('/data/trash.json');
           break;
         case 'ciggy':
           response = await fetch(
@@ -291,7 +299,7 @@ function MapComponent() {
     if (object === 'home') {
       router.push('/');
     } else {
-      router.push(`/map/detail`);
+      router.push('/map/detail');
     }
   };
 
@@ -301,9 +309,15 @@ function MapComponent() {
     } else if (object === 'ciggy') {
       return 'Smoking Place';
     } else if (object === 'toilet') {
-      return 'Toilet';
+      return 'Restroom';
+    } else {
+      return 'Unknown';
     }
-  }
+  };
+
+  const handleLine = () => {
+    setLine(true);
+  };
 
   return (
     <div className={styles.container}>
@@ -321,12 +335,11 @@ function MapComponent() {
       )} */}
       <div className={styles.buttonWrapper}>
         <button className={styles.firstButton} onClick={() => handleButtonClick({ object })}>Nearest</button>
-        <button className={styles.secondButton}>Find the way</button></div>
+        <button className={styles.secondButton} onClick={() => handleLine()}>Find the way</button></div>
 
     </div>
   );
 }
-
 // Wrap the map component in a Suspense boundary to handle client-side only hooks
 export default function MapPage() {
   return (
