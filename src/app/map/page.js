@@ -6,7 +6,9 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './map.module.css';
 import { useRouter } from 'next/navigation';
-import { TiHome, TiThLarge } from 'react-icons/ti';
+import { TiHome } from "react-icons/ti";
+import { FaTrashAlt, FaRestroom } from "react-icons/fa";
+import { PiCigaretteFill } from "react-icons/pi";
 
 const dataConfig = {
   toilet: {
@@ -301,14 +303,12 @@ function MapComponent() {
     } else if (object === 'toilet') {
       return 'Toilet';
     }
-  };
-
-  title();
+  }
 
   return (
     <div className={styles.container}>
       <TiHome onClick={() => handleButtonClick('home')} size={30} />
-      <h2>{title()} Near Me</h2>
+      <h2 className={styles.title}>{title()} Near Me</h2>
       <p>Showing closest {title()} </p>
       {location && (
         <p>
@@ -324,14 +324,9 @@ function MapComponent() {
         </ul>
       )} */}
       <div className={styles.buttonWrapper}>
-        <button
-          className={styles.firstButton}
-          onClick={() => handleButtonClick({ object })}
-        >
-          Nearest
-        </button>
-        <button>Find the way</button>
-      </div>
+        <button className={styles.firstButton} onClick={() => handleButtonClick({ object })}>Nearest</button>
+        <button className={styles.secondButton}>Find the way</button></div>
+
     </div>
   );
 }
