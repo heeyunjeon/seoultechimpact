@@ -6,7 +6,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './map.module.css';
 import { useRouter } from 'next/navigation';
-import { TiHome, TiThLarge } from "react-icons/ti";
+import { TiHome, TiThLarge } from 'react-icons/ti';
 
 const dataConfig = {
   toilet: {
@@ -26,9 +26,30 @@ const dataConfig = {
   },
 };
 
+// Updated GeoJSON for line
+const geojson = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        coordinates: [
+          [127.0553202308, 37.4475381547], // Starting point
+          [127.065, 37.44], // Intermediate points if needed
+          [127.075, 37.43], // Intermediate points if needed
+          [127.085, 37.42], // Intermediate points if needed
+          [127.095, 37.41], // Intermediate points if needed
+          [127.1002, 37.4022], // Ending point
+        ],
+        type: 'LineString',
+      },
+    },
+  ],
+};
+
 function MapComponent() {
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const object = searchParams.get('object');
   const [location, setLocation] = useState(null);
@@ -41,11 +62,12 @@ function MapComponent() {
 
     mapboxgl.accessToken =
       'pk.eyJ1IjoibmFlbmFoamVvbiIsImEiOiJjbTBzNmx0dnYwYmd3MmtwdDlpcHllcjFtIn0.U1p29oCiff8HM9Dx96NrkQ';
+
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [126.978, 37.5665],
-      zoom: 10,
+      center: [127.1002, 37.4022], // Center on the start point of the line
+      zoom: 14,
     });
 
     mapRef.current.on('load', () => {
@@ -56,6 +78,44 @@ function MapComponent() {
           mapRef.current.addImage('custom-marker', image);
         }
       );
+
+      // Add the line from geojson and its gradient paint
+      mapRef.current.addSource('line', {
+        type: 'geojson',
+        lineMetrics: true,
+        data: geojson,
+      });
+
+      mapRef.current.addLayer({
+        type: 'line',
+        source: 'line',
+        id: 'line',
+        paint: {
+          'line-color': 'red',
+          'line-width': 14,
+          'line-gradient': [
+            'interpolate',
+            ['linear'],
+            ['line-progress'],
+            0,
+            'blue',
+            0.1,
+            'royalblue',
+            0.3,
+            'cyan',
+            0.5,
+            'lime',
+            0.7,
+            'yellow',
+            1,
+            'red',
+          ],
+        },
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
+      });
     });
 
     if (navigator.geolocation) {
@@ -129,45 +189,16 @@ function MapComponent() {
       } else if (objectType === 'ciggy') {
         items = [];
         let i = 0;
-
         while (i < 10 && i < data.data.length) {
-          // Ensure you do not exceed the length of data.data
           items.push(data.data[i]);
-          // Add each item to the array
           i += 1;
         }
-      } else {
-        throw new Error('Unsupported object type for filtering');
       }
 
-      console.log('Extracted items:', items);
-      console.log('Number of items:', items.length);
-
-      let filteredItems = [];
-
-      if (objectType === 'toilet' || objectType === 'trash') {
-        if (objectType === 'toilet') {
-          filteredItems = items.filter(
-            (item) =>
-              item['소재지도로명주소']?.includes('서초구') &&
-              item['소재지지번주소']?.includes('서초구')
-          );
-        } else {
-          filteredItems = items.filter((item) =>
-            item['시군구명']?.includes('서초구')
-          );
-        }
-      } else if (objectType === 'ciggy') {
-        // Adjust filtering logic if needed
-        filteredItems = items; // Example, replace with actual logic
-      }
-
-      console.log('Filtered:', filteredItems);
-
-      setItems(filteredItems);
+      setItems(items);
 
       if (mapRef.current) {
-        addMarkersToMap(filteredItems, objectType);
+        addMarkersToMap(items, objectType);
       }
     } catch (error) {
       console.error(`Error fetching ${objectType} data:`, error);
@@ -256,25 +287,23 @@ function MapComponent() {
 
   const handleButtonClick = (object) => {
     if (object === 'home') {
-      router.push('/')
+      router.push('/');
     } else {
       router.push(`/map/detail`);
     }
-
   };
 
   const title = () => {
     if (object === 'trash') {
-      return 'Bin'
+      return 'Bin';
     } else if (object === 'ciggy') {
-      return 'Smoking Place'
+      return 'Smoking Place';
     } else if (object === 'toilet') {
-      return 'Toilet'
+      return 'Toilet';
     }
-  }
+  };
 
-  title()
-
+  title();
 
   return (
     <div className={styles.container}>
@@ -295,9 +324,14 @@ function MapComponent() {
         </ul>
       )} */}
       <div className={styles.buttonWrapper}>
-        <button className={styles.firstButton} onClick={() => handleButtonClick({ object })}>Nearest</button>
-        <button>Find the way</button></div>
-
+        <button
+          className={styles.firstButton}
+          onClick={() => handleButtonClick({ object })}
+        >
+          Nearest
+        </button>
+        <button>Find the way</button>
+      </div>
     </div>
   );
 }
