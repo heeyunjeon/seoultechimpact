@@ -323,7 +323,7 @@ function MapComponent() {
     <div className={styles.container}>
       <TiHome onClick={() => handleButtonClick('home')} size={30} />
       <h2 className={styles.title}>{title()} Near Me</h2>
-      <p>Showing closest {title()} </p>
+      {/* <p>Showing closest {title()} </p> */}
       {location && <p>Your location: Seoul Tech Impact 2024 @ Goorm</p>}
       <div id="map" className={styles.mapContainer} ref={mapContainerRef}></div>
       {/* {items.length > 0 && (
